@@ -12,7 +12,7 @@
 -- that this module is complete and self-contained. I avoided using --
 -- the standard library to show how the proofs are constructed from --
 -- scratch. This means I have to reinvent some of basic things like --
--- natural numbers, lists or vecotr. Some of the code below is not  --
+-- natural numbers, lists or vector. Some of the code below is not  --
 -- mine, in which case I refer to the original source. If you're    --
 -- reading "Why Dependent Types Matter" I encourage you to try and  --
 -- implement all the code by yourself. I assure you that this will  --
