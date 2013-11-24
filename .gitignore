@@ -1,0 +1,8 @@
+# Agda
+*.agdai
+
+# Idris
+*.ibc
+
+# Emacs temp files and backup
+\#*
