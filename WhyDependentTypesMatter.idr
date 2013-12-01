@@ -3,6 +3,24 @@
 -- Author  : Jan Stolarek                                           --
 -- License : Public Domain                                          --
 --                                                                  --
+-- This module contains Idris implementation of code presented in   --
+-- "Why Dependent Types Matter" by Thorsten Altenkirch, Conor       --
+-- McBride and James McKinna. Original code in the paper was        --
+-- written in Epigram. Previously I rewrote that code to Agda and   --
+-- I made another rewrite in Idris. With Idris implementation I     --
+-- decided to use many of the built-in features provided by Idris.  --
+-- This made some things (like proofs) a lot simpler. Also, at the  --
+-- moment Idris' totality checker does a better job than Agda's     --
+-- (remember that idris-mode does not highlight partial functions - --
+-- you need to enable totality checking via command line option,    --
+-- "total" annotation or in repl using ":total" command).           --
+--                                                                  --
+-- This file is a rewrite of Agda implementation. I decided to      --
+-- remove all original comments from the .agda file and comment     --
+-- only the things that are different in Idris. This allows you     --
+-- to focus easily on new stuff, but it also assumes that you've    --
+-- read Agda implementation.                                        --
+--                                                                  --
 -- This code was written and tested in Idris 0.9.10. YMMV           --
 --                                                                  --
 ----------------------------------------------------------------------
@@ -13,8 +31,6 @@
 
 -- Section 1 : Introduction
 -- ~~~~~~~~~~~~~~~~~~~~~~~~
--- Standard implementation of merge sort with no dependent types. This
--- implements code shown in the paper in Figure 1.
 
 data Order : Type where
   le : Order
@@ -25,21 +41,20 @@ order Z    y      = le
 order (S x) Z     = ge
 order (S x) (S y) = order x y
 
--- deal splits a list into a pair of lists. If the input list has even length
--- then the output lists have the same length. If input has odd length them
--- forst output list is longer by one.
 deal : {X : Type} -> List X -> (List X, List X)
 deal []        = ([] , [])
 deal (x :: []) = (x :: [] , [])
 deal (y :: (z :: xs)) with (deal xs)
   | (ys , zs) = (y :: ys , z :: zs)
 
--- Problems that we had in Agda with its termination checker are gone
--- in Idris. There's only a small issue of name clash between our
--- merge and sort functions and the same functions defined in
--- prelude. Let's just rename our functions to mergeL and sortL (L
--- indicates that they work on lists.
+-- Problems we had with termination checking of merge function in Agda are gone
+-- in Idris - let's celebrate that by annotating merge with "total".
 
+-- There's a small issue of name clash between our merge and sort functions and
+-- the same functions defined in prelude. Let's just rename our functions to
+-- mergeL and sortL (L indicates that they work on lists).
+
+total
 mergeL : List Nat -> List Nat -> List Nat
 mergeL []        ys             = ys
 mergeL xs        []             = xs
@@ -47,6 +62,7 @@ mergeL (x :: xs) (y :: ys) with (order x y)
   | le = x :: mergeL xs (y :: ys)
   | ge = y :: mergeL (x :: xs) ys
 
+-- Still, sortL is not recognized as total.
 sortL : List Nat -> List Nat
 sortL xs with (deal xs)
   | (ys , []) = ys
@@ -58,7 +74,7 @@ sortL xs with (deal xs)
 
 -- Section 3.2 : Defusing General Recursion
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- Merge sort with explicit structure of recursion.
+
 data Parity : Type where
   p0 : Parity
   p1 : Parity
@@ -90,7 +106,7 @@ sortT xs = mergeT (dealT xs)
 -- Section 4 : Maintaining Invariants by Static Indexing
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
--- From now I start using Idris Vectors, which are defined as:
+-- I'm using Idris Vectors, which are defined as:
 --
 --   data Vect : Nat -> Type -> Type
 --      Nil  : Vect Z a
@@ -99,7 +115,7 @@ sortT xs = mergeT (dealT xs)
 -- This is slightly different than Agda's definition: index comes
 -- first, type parameter comes second. Note that prior to Idris 0.9.9
 -- type parameter was first and index was second - if you're using
--- older version of Idris code below will not work.
+-- older version of Idris this code will not work.
 
 vtail : {X : Type} -> {n : Nat} -> Vect (S n) X -> Vect n X
 vtail (x :: xs) = xs
@@ -131,7 +147,6 @@ infixl 9 @
 (@) Nil       Nil       = Nil
 (@) (f :: fs) (s :: ss) = (f s) :: (fs @ ss)
 
-
 -- As a reminder, here'e the definition of addition:
 --
 --   _+_ : Nat -> Nat -> Nat
@@ -157,9 +172,9 @@ xpose Nil          = vec Nil
 xpose (xj :: xi'j) = vec (::) @ xj @ (xpose xi'j)
 
 -- Above we defined xpose using our definitions of vec and @. These
--- two functions make Vectore an Applicative - vec is pure, @ is
--- application (in Haskell and Idris usually named <$>. Idris has a
--- very cool thing, called idiom brackets that allows us to rewrite:
+-- two functions make Vector an Applicative - vec is pure, @ is
+-- application (in Haskell and Idris usually named <$>). Idris has a
+-- very cool thing, called idiom brackets, that allows us to rewrite:
 --
 --   pure f <$> x <$> y
 --
@@ -167,16 +182,15 @@ xpose (xj :: xi'j) = vec (::) @ xj @ (xpose xi'j)
 --
 --   [| f x |]
 --
--- Here's alternative definition of xpose' that uses idiom brackets
+-- Here's alternative definition of xpose that uses idiom brackets
 -- (remember that it uses Idris' built-in definitions of pure and <$>
--- instead of vap and @).
+-- instead of our vap and @).
 xpose' : Vect m (Vect n a) -> Vect n (Vect m a)
 xpose' Nil          = [| Nil |]
 xpose' (xj :: xi'j) = [| xj :: xpose' xi'j |]
 
 -- Section 4.1 : Static Indexing and Proofs
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- This section is the one that is missing some of the proofs.
 
 vrevacc : Vect n a -> Vect m a -> Vect (n + m) a
 vrevacc Nil       ys = ys
@@ -185,7 +199,7 @@ vrevacc (x :: xs) ys = ?zonk --vrevacc xs (x :: ys)
 -- Again, we can't just fill in the right code because Idris doesn't
 -- know that m + (1 + n) eqauls 1 + (m + n). Once again have to prove
 -- it, but this time we will not be reinventing the wheel. We will use
--- Idris' proof assitant modes with tactics and proofs of basic
+-- Idris' proof assitant mode with tactics and proofs of basic
 -- properties provided by prelude. Let's write a "provisional
 -- definition" of vrevacc:
 
@@ -197,13 +211,13 @@ vrevacc2 (x :: xs) ys ?= vrevacc2 xs (x :: ys)
 -- a provisional definition of a function. It tells Idris to accept the
 -- code and we will later supply a proof of its correctness. We can now
 -- load file into Idris repl (using :l filename) and display the list of
--- metavariables to prove using :m
+-- metavariables to prove by typing :m
 --
 --   *WhyDependentTypesMatter> :m
 --   Global metavariables:
 --             [vrevacc2_lemma_1,zonk]
 --
--- We use :p to enter proof mode for selected meta variable:
+-- We use :p to enter proof mode for selected metavariable:
 --
 --   *WhyDependentTypesMatter> :p vrevacc2_lemma_1
 --   ----------                 Goal:                  ----------
@@ -302,7 +316,6 @@ vrevacc2_lemma_1 = proof
   rewrite sym (plusSuccRightSucc n m)
   trivial
 
-
 vrev : Vect n a -> Vect n a
 vrev xs ?= vrevacc2 xs Nil
 
@@ -335,9 +348,7 @@ p2n : Parity -> Nat
 p2n p0 = Z
 p2n p1 = S Z
 
--- Data types and functions below have S (mnemonic for Sized) appended
--- to their name to avoid name clash. I renamed the data constructors to
--- silence Idris warnings.
+-- I renamed the data constructors to silence Idris warnings.
 using (X : Type)
   data DealTS : X -> Nat -> Type where
     empTS  : DealTS X Z
@@ -354,9 +365,9 @@ insertTS : {n : Nat} -> {X : Type} -> X -> DealTS X n -> DealTS X (S n)
 insertTS x empTS                = leafTS x
 insertTS x (leafTS y         )  = nodeTS p0 (leafTS y) (leafTS x)
 insertTS x (nodeTS     p0 l r)  = nodeTS p1 (insertTS x l) r
-insertTS x (nodeTS {n} p1 l r) ?= (nodeTS p0 l (insertTS x r))
+insertTS x (nodeTS {n} p1 l r) ?= nodeTS p0 l (insertTS x r)
 
--- much simpler than in Agda!
+-- Lest equation of insertTS looks much simpler than in Agda!
 
 insertTS_lemma_1 = proof
   intros
@@ -374,7 +385,7 @@ sortTS xs = mergeTS (dealTS xs)
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 -- Sadly, Idris does not allow Unicde in operators so I have to use
--- nameother than ≤ and <= (which is already defined).
+-- name other than ≤ and <= (which is already defined).
 infix 4 <!=
 
 data (<!=) : Nat -> Nat -> Type where
@@ -444,7 +455,7 @@ olist = ocons (S Z) le0 onil
 olist2 : OList Z
 olist2 = ocons (S Z) le0 (ocons (S (S Z)) (leS le0) onil)
 
--- Again, no issues with termination checker.
+-- Again, no issues with termination checker in mergeO.
 mergeO : OList b -> OList b -> OList b
 mergeO onil ys = ys
 mergeO (ocons x blex xs) onil = ocons x blex xs

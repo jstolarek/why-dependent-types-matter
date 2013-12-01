@@ -60,8 +60,8 @@ order (suc x) zero    = ge
 order (suc x) (suc y) = order x y
 
 -- deal splits a list into a pair of lists. If the input list has even length
--- then the output lists have the same length. If input has odd length them
--- forst output list is longer by one.
+-- then the output lists have the same length. If input has odd length then
+-- first output list is longer by one.
 deal : {X : Set} → List X → List X × List X
 deal nil        = nil , nil
 deal (x :: nil) = x :: nil , nil
@@ -97,6 +97,9 @@ merge (x :: xs) (y :: ys) with order x y
 merge (x :: xs) (y :: ys) | le = x :: merge xs (y :: ys)
 merge (x :: xs) (y :: ys) | ge = y :: merge (x :: xs) ys
 
+-- After I posted the original code I realized that it is not obvious that this
+-- function is total. We know that (deal xs) is smaller than xs, but I think
+-- that this isn't obvious.
 sort : List Nat → List Nat
 sort xs with deal xs
 sort xs | ys , nil = ys
