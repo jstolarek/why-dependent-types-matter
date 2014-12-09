@@ -21,7 +21,8 @@
 -- functions instead of writing everything from scratch.  All data  --
 -- types use GADT syntax even if they are ordinary ADTs.            --
 --                                                                  --
--- This code was written and tested in GHC 7.8.3 and 7.6.3.         --
+-- This code was written and tested in GHC 7.8.3. It does not work  --
+-- with GHC 7.6                                                     --
 --                                                                  --
 ----------------------------------------------------------------------
 
@@ -145,16 +146,9 @@ Succ m + n = Succ (m + n)
 infixl 4 +
 
 -- we also need a type-level addition
-type family (a :: Nat) :+ (b :: Nat) :: Nat
-type instance Zero   :+ n = n
-type instance Succ n :+ m = Succ (n :+ m)
--- alternatively, we could use a closed type family:
---
---  type family (a :: Nat) :+ (b :: Nat) :: Nat where
---     Zero   :+ n = n
---     Succ n :+ m = Succ (n :+ m)
---
--- but that would be incompatible with GHC 7.6
+type family (a :: Nat) :+ (b :: Nat) :: Nat where
+   Zero   :+ n = n
+   Succ n :+ m = Succ (n :+ m)
 
 -- vector addition
 (++) :: Vec a n -> Vec a m -> Vec a (n :+ m)
@@ -269,9 +263,9 @@ p2n P0 = Zero
 p2n P1 = Succ Zero
 
 -- converting parity to Nat - type level
-type family P2N (p :: Parity) :: Nat
-type instance P2N P0 = Zero
-type instance P2N P1 = Succ Zero
+type family P2N (p :: Parity) :: Nat where
+    P2N P0 = Zero
+    P2N P1 = Succ Zero
 
 -- Data types and functions below have S (mnemonic for Sized) appended to their
 -- name to avoid name clash.
@@ -374,9 +368,9 @@ data LNat where
   LSucc :: LNat -> LNat
   LInf  :: LNat
 
-type family Lift (a :: Nat) :: LNat
-type instance Lift  Zero    = LZero
-type instance Lift (Succ x) = LSucc (Lift x)
+type family Lift (a :: Nat) :: LNat where
+    Lift  Zero    = LZero
+    Lift (Succ x) = LSucc (Lift x)
 
 -- In the paper ≤ is used for comparisons on lifted Nats. I'm using LLEq for
 -- this.
