@@ -4,5 +4,8 @@
 # Idris
 *.ibc
 
+# Haskell
+*.hi
+
 # Emacs temp files and backup
 \#*
