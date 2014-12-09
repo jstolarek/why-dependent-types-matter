@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------
 --                                                                  --
--- Author  : Jan Stolarek                                           --
+-- Author  : Jan Stolarek <jan.stolarek@p.lodz.pl>                  --
 -- License : Public Domain                                          --
 --                                                                  --
 -- This module contains Haskell implementation of code presented in --
