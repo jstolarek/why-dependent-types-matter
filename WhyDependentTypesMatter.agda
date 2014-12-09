@@ -6,11 +6,11 @@
 -- This module contains Agda implementation of code presented in    --
 -- "Why Dependent Types Matter" by Thorsten Altenkirch, Conor       --
 -- McBride and James McKinna. Original code in the paper was        --
--- written in Epigram, but with its official web page offline for   --
--- a couple of months now Epigram seems to be dead. Original paper  --
--- elides details of some proofs. I supplied the missing parts so   --
--- that this module is complete and self-contained. I avoided using --
--- the standard library to show how the proofs are constructed from --
+-- written in Epigram but with its official web page offline        --
+-- Epigram seems to be dead. Original paper elides details of some  --
+-- proofs. I supplied the missing parts so that this module is      --
+-- complete and self-contained. I avoided using the standard        --
+-- library to show how the proofs are constructed from              --
 -- scratch. This means I have to reinvent some of basic things like --
 -- natural numbers, lists or vector. Some of the code below is not  --
 -- mine, in which case I refer to the original source. If you're    --
@@ -229,7 +229,7 @@ vrevacc2 {X} {suc n} {m} (vcons x xs) ys =
 --
 -- in the paper. Call to vrevacc2 produces Vec with index n + (suc m). The
 -- problem is we need index suc (n + m). We need to prove their equality.  we
--- already proved with plusSuc that suc (n + m) equald n + (suc m). Since now
+-- already proved with plusSuc that suc (n + m) equals n + (suc m). Since now
 -- we're proving something opposite we make use of symmetry: we apply sym to
 -- plusSuc. Having a proof is not enough - we must apply it to convert from the
 -- result produced by vrevacc2 to the result expected by the typechecker. To do

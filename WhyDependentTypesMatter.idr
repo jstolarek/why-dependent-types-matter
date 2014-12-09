@@ -7,7 +7,7 @@
 -- "Why Dependent Types Matter" by Thorsten Altenkirch, Conor       --
 -- McBride and James McKinna. Original code in the paper was        --
 -- written in Epigram. Previously I rewrote that code to Agda and   --
--- I made another rewrite in Idris. With Idris implementation I     --
+-- now I made another rewrite in Idris. With Idris implementation I --
 -- decided to use many of the built-in features provided by Idris.  --
 -- This made some things (like proofs) a lot simpler. Also, at the  --
 -- moment Idris' totality checker does a better job than Agda's     --
