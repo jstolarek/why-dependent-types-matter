@@ -184,7 +184,7 @@ vrevacc SZero     _  VNil        ys = ys
 vrevacc (SSucc m) n (VCons x xs) ys = undefined -- vrevacc m (SSucc n) xs
                                                 --         (VCons x ys)
 -- We can't fill in the correct code, because Haskell does not know that
--- m + (1 + n) eqauls 1 + (m + n). We have to prove it.
+-- m + (1 + n) equals 1 + (m + n). We have to prove it.
 
 -- To conduct a proof we need three properties:
 -- a) symmetry: if a equals b then b equals a. sym can be found in
