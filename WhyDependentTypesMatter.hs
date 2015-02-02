@@ -352,12 +352,9 @@ leTrans :: LEq x y -> LEq y z -> LEq x z
 leTrans LeZ       yz      = LeZ
 leTrans (LeS xy) (LeS yz) = LeS (leTrans xy yz)
 
-leASym :: LEq x y -> LEq y x -> x :~: x
+leASym :: LEq x y -> LEq y x -> x :~: y
 leASym  LeZ      LeZ     = Refl
-leASym (LeS xy) (LeS yx) = Refl
-
--- Second equation for leASym is surprisingly simple. I admit I don't fully
--- understand why I could simply use refl here, without doing inductive proof.
+leASym (LeS xy) (LeS yx) = cong SSucc (leASym xy yx)
 
 -- Section 5.2 :: Locally Sorted Lists
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
