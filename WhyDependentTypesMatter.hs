@@ -192,12 +192,9 @@ vrevacc (SSucc m) n (VCons x xs) ys = undefined -- vrevacc m (SSucc n) xs
 sym :: (a :~: b) -> (b :~: a)
 sym Refl = Refl
 
--- b) congruence: if a equals b, then (f a) equals (f b).  For the sake of
--- simplicity Haskell implementation assumes that `f` is a function on singleton
--- Nats. In general it could work on any singleton types we would have to
--- abstract singletons using a data family (see singletons library).
-cong :: (SNat a -> SNat b) -> (a :~: c) -> (f a :~: f c)
-cong _ Refl = Refl
+-- b) congruence: if a equals b, then (f a) equals (f b)
+cong :: (a :~: b) -> (f a :~: f b)
+cong Refl = Refl
 
 -- c) substitution: if we have a proposition that is true for a and a equals b,
 -- then proposition is also true for b. In other words if we can prove equality
@@ -210,7 +207,7 @@ subst Refl x = x
 
 plusSucc :: SNat a -> SNat b -> ((Succ (a :+ b)) :~: (a :+ (Succ b)))
 plusSucc  SZero    _ = Refl
-plusSucc (SSucc a) b = cong SSucc (plusSucc a b)
+plusSucc (SSucc a) b = cong (plusSucc a b)
 
 -- now that we have a proof that m + (1 + n) eqauls 1 + (m + n) we
 -- can write our vrevacc function:
@@ -233,7 +230,7 @@ vrevacc2 (SSucc m) n (VCons x xs) ys =
 
 plusZero :: SNat a -> ((a :+ Zero) :~: a)
 plusZero  SZero    = Refl
-plusZero (SSucc a) = cong SSucc (plusZero a)
+plusZero (SSucc a) = cong (plusZero a)
 
 vrev :: SNat n -> Vec a n -> Vec a n
 vrev n xs = subst (plusZero n) (vrevacc2 n SZero xs VNil)
@@ -298,10 +295,9 @@ insertTS x EmpTS              = LeafTS x
 insertTS x (LeafTS y        ) = NodeTS (SSucc SZero) SP0 (LeafTS y) (LeafTS x)
 insertTS x (NodeTS n SP0 l r) = NodeTS (sP2N SP0 %:+ n) SP1 (insertTS x l) r
 insertTS x (NodeTS n SP1 l r) =
-  subst (sym (cong SSucc (plusSucc n n))) (NodeTS (sP2N SP1 %:+ n) SP0 l
-                                                  (insertTS x r))
---       |    |           |
---       |    |           +---- Succ (n + n) :~: n + Succ n
+  subst (sym (cong (plusSucc n n))) (NodeTS (sP2N SP1 %:+ n) SP0 l (insertTS x r))
+--       |    |     |
+--       |    |     +---- Succ (n + n) :~: n + Succ n
 --       |    +---------------- Succ (Succ (n + n)) :~: Succ (n + Succ n))
 --       +--------------------- Succ (n + Succ n))  :~: Succ (Succ (n + n))
 --
@@ -354,7 +350,7 @@ leTrans (LeS xy) (LeS yz) = LeS (leTrans xy yz)
 
 leASym :: LEq x y -> LEq y x -> x :~: y
 leASym  LeZ      LeZ     = Refl
-leASym (LeS xy) (LeS yx) = cong SSucc (leASym xy yx)
+leASym (LeS xy) (LeS yx) = cong (leASym xy yx)
 
 -- Section 5.2 :: Locally Sorted Lists
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
