@@ -26,8 +26,12 @@
 ----------------------------------------------------------------------
 
 -- In case of Idris we don't need to reinvent the wheel. We have Nat,
--- Bool, Lists, Vectors and tuples already at hand in the standard prelude
--- which is imported by default to every Idris module.
+-- Bool, Lists and tuples already at hand in the standard prelude
+-- which is imported by default to every Idris module. Starting with
+-- Idris 0.9.16 vectors are in Data.Vect module and not available by
+-- default in prelude so we need to import them.
+
+import Data.Vect
 
 -- Section 1 : Introduction
 -- ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -412,8 +416,8 @@ leTrans le0      yz       = le0
 leTrans (leS xy) (leS yz) = leS (leTrans xy yz)
 
 leASym : {x, y : Nat} -> x <!= y -> y <!= x -> x = x
-leASym le0      le0      = refl
-leASym (leS xy) (leS yx) = refl
+leASym le0      le0      = Refl
+leASym (leS xy) (leS yx) = Refl
 
 -- Section 5.2 : Locally Sorted Lists
 -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
